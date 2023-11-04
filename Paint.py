@@ -251,10 +251,10 @@ class Canvas(QWidget):
     def paintEvent(self, event, **kwargs):
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
-        # painter = QPainter(self.image)
+        painter_image = QPainter(self.image)
         painter.begin(self)
         for obj in self.objects:
-            obj.draw(painter)
+            obj.draw(painter_image)
         painter.end()
 
     def mousePressEvent(self, event, **kwargs):
@@ -339,13 +339,7 @@ class Canvas(QWidget):
         self.color = [255, 255, 255]
 
     def save(self):
-        painter = QPainter(self)
-        painter.drawImage(self.rect(), self.image, self.image.rect())
-        painter = QPainter(self.image)
-        painter.begin(self)
-        for obj in self.objects:
-            obj.draw(painter)
-        painter.end()
+
         # selecting file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
                                                   "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
