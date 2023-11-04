@@ -1,6 +1,7 @@
 import io
 import sys
 
+from PIL import Image
 from PyQt5 import uic
 from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QPixmap, QImage, QColor, QTransform, qGray, qRgb
@@ -179,11 +180,12 @@ class Photoshop(QMainWindow):
                                         'Картинки (*.jpg)')[0]
         self.bright = 0
         self.bright_change.setMinimum(0)
-        self.bright_change.setMaximum(200)
-        self.bright_change.setValue(100)
+        self.bright_change.setMaximum(255)
+        self.bright_change.setValue(255)
         self.bright_change.setSingleStep(1)
         self.bright_change.valueChanged.connect(self.set_bright)
         self.degree = 0
+        self.new_img = 'new.png'
 
         self.orig_image = QImage(self.filename)
         self.curr_image = self.orig_image.copy()
@@ -210,8 +212,9 @@ class Photoshop(QMainWindow):
                 elif self.sender().text() == 'B':
                     self.curr_image.setPixelColor(QPoint(i, j),
                                                   QColor(0, 0, b))
-                else:
-                    pass
+                elif self.sender().text() == 'All-Gray':
+                    gray = qGray(r, g, b)
+                    self.curr_image.setPixelColor(QPoint(i, j), QColor(gray, gray, gray))
                 t = QTransform().rotate(self.degree)
                 self.curr_image = self.curr_image.transformed(t)
                 self.pixmap = QPixmap.fromImage(self.curr_image)
@@ -234,31 +237,36 @@ class Photoshop(QMainWindow):
         self.image.setPixmap(self.pixmap)
 
     def set_bright(self):
-        x, y = self.curr_image.size().width(), self.curr_image.size().height()
-
-        for i in range(x):
-            for j in range(y):
-                r, g, b, _ = self.curr_image.pixelColor(i, j).getRgb()
-                self.bright = (0.2126 * r + 0.7152 * g + 0.0722 * b) * self.bright_change.value() * 0.01
-                h, s, l, x = QColor(self.curr_image.pixelColor(i, j)).getHslF()
-                l = l * self.bright_change.value() * 0.01
-                self.curr_image.setPixelColor(QPoint(i, j), QColor(QColor(r, g, b).setHslF(h, s, (l * self.bright), x)))
-                
-            '''  pixel = self.curr_image.pixel(x, y)
-            r = qRed(pixel)
-            g = qGreen(pixel)
-            b = qBlue(pixel)
-             
-            new_r = min(max(r + self.bright_change.value(), 0), 255)
-            new_g = min(max(g + self.bright_change.value(), 0), 255)
-            new_b = min(max(b + self.bright_change.value(), 0), 255)
-             
-            curr_image.setPixel(x, y, qRgb(new_r, new_g, new_b))
-                '''
+        transp = int(self.bright_change.value())
+        img = Image.open(self.filename)
+        img.putalpha(transp)
+        img.save(self.new_img)
+        new_image = QImage(self.new_img)
+        # # x, y = self.curr_image.size().width(), self.curr_image.size().height()
+        # #
+        # # for i in range(x):
+        # #     for j in range(y):
+        # #         r, g, b, _ = self.curr_image.pixelColor(i, j).getRgb()
+        # #         self.bright = (0.2126 * r + 0.7152 * g + 0.0722 * b) * self.bright_change.value() * 0.01
+        # #         h, s, l, x = QColor(self.curr_image.pixelColor(i, j)).getHslF()
+        # #         l = l * self.bright_change.value() * 0.01
+        # #         self.curr_image.setPixelColor(QPoint(i, j), QColor(QColor(r, g, b).setHslF(h, s, self.bright, x)))
+        #
+        #     '''  pixel = self.curr_image.pixel(x, y)
+        #     r = qRed(pixel)
+        #     g = qGreen(pixel)
+        #     b = qBlue(pixel)
+        #
+        #     new_r = min(max(r + self.bright_change.value(), 0), 255)
+        #     new_g = min(max(g + self.bright_change.value(), 0), 255)
+        #     new_b = min(max(b + self.bright_change.value(), 0), 255)
+        #
+        #     curr_image.setPixel(x, y, qRgb(new_r, new_g, new_b))
+        #         '''
 
         t = QTransform().rotate(self.degree)
-        self.curr_image = self.curr_image.transformed(t)
-        self.pixmap = QPixmap.fromImage(self.curr_image)
+        new_image = new_image.transformed(t)
+        self.pixmap = QPixmap.fromImage(new_image)
         self.image.setPixmap(self.pixmap)
 
 
