@@ -5,7 +5,6 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
-from win32api import GetSystemMetrics
 
 ui = '''<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
@@ -342,9 +341,11 @@ class Canvas(QWidget):
         self.color = [255, 255, 255]
 
     def save(self):
+        '''
         self.image.fill(Qt.white)
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
+        '''
         painter = QPainter(self.image)
         painter.begin(self)
         painter.setPen(QPen(Qt.black, 5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
