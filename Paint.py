@@ -1,3 +1,4 @@
+import os
 import sys
 import io
 
@@ -57,9 +58,15 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
     <addaction name="del_act"/>
     <addaction name="rect_act_2"/>
     <addaction name="separator"/>
+   </widget>
+   <widget class="QMenu" name="menu_2">
+    <property name="title">
+     <string>Файл</string>
+    </property>
     <addaction name="save"/>
     <addaction name="download"/>
    </widget>
+   <addaction name="menu_2"/>
    <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -78,8 +85,6 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
    <addaction name="round_act"/>
    <addaction name="del_act"/>
    <addaction name="rect_act_2"/>
-   <addaction name="save"/>
-   <addaction name="download"/>
   </widget>
   <action name="brush_act">
    <property name="text">
@@ -158,7 +163,7 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
   </action>
   <action name="save">
    <property name="text">
-    <string>Сохранить и выйти</string>
+    <string>Сохранить</string>
    </property>
   </action>
   <action name="download">
@@ -251,7 +256,6 @@ class Canvas(QWidget):
     def paintEvent(self, event, **kwargs):
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
-        # painter = QPainter(self.image)
         painter.begin(self)
         for obj in self.objects:
             obj.draw(painter)
@@ -339,13 +343,6 @@ class Canvas(QWidget):
         self.color = [255, 255, 255]
 
     def save(self):
-        painter = QPainter(self)
-        painter.drawImage(self.rect(), self.image, self.image.rect())
-        painter = QPainter(self.image)
-        painter.begin(self)
-        for obj in self.objects:
-            obj.draw(painter)
-        painter.end()
         # selecting file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
                                                   "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
@@ -355,7 +352,9 @@ class Canvas(QWidget):
             return
 
         # saving canvas at desired path
-        self.image.save(filePath)
+        pixmap = self.grab()
+        if not pixmap.isNull():
+            pixmap.save(filePath)
 
     def download(self):
         filename = QFileDialog.getOpenFileName(self, 'Download Image', '', "PNG(*.png);;JPEG(*.jpg *.jpeg)")[0]
@@ -371,13 +370,24 @@ class Paint(QMainWindow):
         super(Paint, self).__init__()
         x = io.StringIO(ui)
         uic.loadUi(x, self)
+        path = os.path.join(os.path.abspath(os.curdir), 'icons')
         self.setCentralWidget(Canvas(self.size()))
 
         self.brush_act.triggered.connect(self.centralWidget().setBrush)
+        self.brush_act.setIcon(QIcon(os.path.join(path, 'art-and-design.png')))
+
         self.line_act.triggered.connect(self.centralWidget().setLine)
+        self.line_act.setIcon(QIcon(os.path.join(path, 'diagonal-line (1).png')))
+
         self.round_act.triggered.connect(self.centralWidget().setCircle)
+        self.round_act.setIcon(QIcon(os.path.join(path, 'circle.png')))
+
         self.rect_act_2.triggered.connect(self.centralWidget().setRect)
+        self.rect_act_2.setIcon(QIcon(os.path.join(path, 'rounded-rectangle (1).png')))
+
         self.del_act.triggered.connect(self.centralWidget().setClean)
+        self.del_act.setIcon(QIcon(os.path.join(path, 'eraser.png')))
+
         #Colors
         self.red.triggered.connect(self.centralWidget().setRed)
         self.orange.triggered.connect(self.centralWidget().setOrange)
