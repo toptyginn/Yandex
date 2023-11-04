@@ -5,6 +5,7 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from PyQt5.uic.properties import QtGui
 
 ui = '''<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
@@ -247,10 +248,11 @@ class Canvas(QWidget):
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
 
-
     def paintEvent(self, event):
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
+        painter = QPainter(self.image)
+        painter.setPen(QPen(Qt.black, 5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
         painter.begin(self)
         for obj in self.objects:
             obj.draw(painter)
@@ -341,18 +343,6 @@ class Canvas(QWidget):
         self.color = [255, 255, 255]
 
     def save(self):
-        '''
-        self.image.fill(Qt.white)
-        painter = QPainter(self)
-        painter.drawImage(self.rect(), self.image, self.image.rect())
-        '''
-        painter = QPainter(self.image)
-        painter.begin(self)
-        painter.setPen(QPen(Qt.black, 5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
-        for obj in self.objects:
-            obj.draw(painter)
-        painter.end()
-
         # selecting file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
                                                   "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
@@ -363,7 +353,6 @@ class Canvas(QWidget):
 
         # saving canvas at desired path
         self.image.save(filePath)
-        sys.exit(QApplication(sys.argv).exec())
 
     def download(self):
         filename = QFileDialog.getOpenFileName(self, 'Download Image', '', "PNG(*.png);;JPEG(*.jpg *.jpeg)")[0]
@@ -386,6 +375,7 @@ class Paint(QMainWindow):
         self.round_act.triggered.connect(self.centralWidget().setCircle)
         self.rect_act_2.triggered.connect(self.centralWidget().setRect)
         self.del_act.triggered.connect(self.centralWidget().setClean)
+        #Colors
         self.red.triggered.connect(self.centralWidget().setRed)
         self.orange.triggered.connect(self.centralWidget().setOrange)
         self.yellow.triggered.connect(self.centralWidget().setYellow)
@@ -395,8 +385,18 @@ class Paint(QMainWindow):
         self.violet.triggered.connect(self.centralWidget().setViolet)
         self.black.triggered.connect(self.centralWidget().setBlack)
         self.white.triggered.connect(self.centralWidget().setWhite)
+        #File
         self.save.triggered.connect(self.centralWidget().save)
         self.download.triggered.connect(self.centralWidget().download)
+
+    def closeEvent(self, event):
+        quit_msg = "Сохранить изменения?"
+        reply = QMessageBox.question(self, 'Message',
+                                           quit_msg, QMessageBox.Yes, QMessageBox.No)
+        if reply == QtGui.QMessageBox.Yes:
+            self.centralWidget().save()
+        else:
+            event.ignore()
 
 
 if __name__ == '__main__':
