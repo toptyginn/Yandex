@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1770</width>
-    <height>1258</height>
+    <width>2560</width>
+    <height>1440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1770</width>
+     <width>2560</width>
      <height>21</height>
     </rect>
    </property>
@@ -149,7 +149,7 @@
   </action>
   <action name="save">
    <property name="text">
-    <string>Сохранить</string>
+    <string>Сохранить и выйти</string>
    </property>
   </action>
   <action name="download">

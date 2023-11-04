@@ -5,6 +5,7 @@ from PyQt5 import uic
 from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
+from win32api import GetSystemMetrics
 
 ui = '''<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
@@ -14,8 +15,8 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1770</width>
-    <height>1258</height>
+    <width>2560</width>
+    <height>1440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -27,7 +28,7 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1770</width>
+     <width>2560</width>
      <height>21</height>
     </rect>
    </property>
@@ -157,7 +158,7 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
   </action>
   <action name="save">
    <property name="text">
-    <string>Сохранить</string>
+    <string>Сохранить и выйти</string>
    </property>
   </action>
   <action name="download">
@@ -236,12 +237,13 @@ class Rectangle:
 
 
 class Canvas(QWidget):
-    def __init__(self):
+    def __init__(self, SizeOfMainWindow):
         super(Canvas, self).__init__()
+        self.Size = SizeOfMainWindow
         self.objects = []
         self.instrument = 'brush'
         self.color = [0, 0, 0]
-        self.image = QImage(3000, 3000, QImage.Format_RGB32)
+        self.image = QImage(self.Size, QImage.Format_RGB32)
         self.image.fill(Qt.white)
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
@@ -341,6 +343,8 @@ class Canvas(QWidget):
 
     def save(self):
         self.image.fill(Qt.white)
+        painter = QPainter(self)
+        painter.drawImage(self.rect(), self.image, self.image.rect())
         painter = QPainter(self.image)
         painter.begin(self)
         painter.setPen(QPen(Qt.black, 5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
@@ -358,9 +362,10 @@ class Canvas(QWidget):
 
         # saving canvas at desired path
         self.image.save(filePath)
+        sys.exit(QApplication(sys.argv).exec())
 
     def download(self):
-        filename = QFileDialog.getOpenFileName(self, 'Download Image', '', "PNG(*.png);;JPEG(*.jpg *.jpeg)")
+        filename = QFileDialog.getOpenFileName(self, 'Download Image', '', "PNG(*.png);;JPEG(*.jpg *.jpeg)")[0]
 
         if filename == "":
             return
@@ -373,7 +378,7 @@ class Paint(QMainWindow):
         super(Paint, self).__init__()
         x = io.StringIO(ui)
         uic.loadUi(x, self)
-        self.setCentralWidget(Canvas())
+        self.setCentralWidget(Canvas(self.size()))
 
         self.brush_act.triggered.connect(self.centralWidget().setBrush)
         self.line_act.triggered.connect(self.centralWidget().setLine)
