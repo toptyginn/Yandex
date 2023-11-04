@@ -168,7 +168,7 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
   </action>
   <action name="download">
    <property name="text">
-    <string>Загрузить</string>
+    <string>Загрузить фон</string>
    </property>
   </action>
  </widget>
