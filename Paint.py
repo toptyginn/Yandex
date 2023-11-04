@@ -248,37 +248,33 @@ class Canvas(QWidget):
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
 
-    def paintEvent(self, event):
+    def paintEvent(self, event, **kwargs):
         painter = QPainter(self)
         painter.drawImage(self.rect(), self.image, self.image.rect())
-        painter = QPainter(self.image)
-        painter.setPen(QPen(Qt.black, 5, Qt.SolidLine, Qt.RoundCap, Qt.RoundJoin))
+        # painter = QPainter(self.image)
         painter.begin(self)
         for obj in self.objects:
             obj.draw(painter)
         painter.end()
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event, **kwargs):
         if self.instrument == 'brush':
             self.objects.append(BrushPoint(event.x(), event.y(), self.color[0], self.color[1], self.color[2]))
-            self.update()
         elif self.instrument == 'line':
             self.objects.append((Line(event.x(), event.y(), event.x(), event.y(), self.color[0], self.color[1],
                                       self.color[2])))
-            self.update()
         elif self.instrument == 'rect':
             self.objects.append((Rectangle(event.x(), event.y(), event.x(), event.y(), self.color[0], self.color[1],
                                            self.color[2])))
-            self.update()
         elif self.instrument == 'circle':
             self.objects.append((Circle(event.x(), event.y(), event.x(), event.y(), self.color[0], self.color[1],
                                         self.color[2])))
-            self.update()
         elif self.instrument == 'clean':
             self.objects.append(BrushPoint(event.x(), event.y(), 255, 255, 255))
-            self.update()
 
-    def mouseMoveEvent(self, event):
+        self.update()
+
+    def mouseMoveEvent(self, event, **kwargs):
         if self.instrument == 'brush':
             self.objects.append(BrushPoint(event.x(), event.y(), self.color[0], self.color[1], self.color[2]))
             self.update()
@@ -343,6 +339,13 @@ class Canvas(QWidget):
         self.color = [255, 255, 255]
 
     def save(self):
+        painter = QPainter(self)
+        painter.drawImage(self.rect(), self.image, self.image.rect())
+        painter = QPainter(self.image)
+        painter.begin(self)
+        for obj in self.objects:
+            obj.draw(painter)
+        painter.end()
         # selecting file path
         filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
                                                   "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
@@ -389,14 +392,15 @@ class Paint(QMainWindow):
         self.save.triggered.connect(self.centralWidget().save)
         self.download.triggered.connect(self.centralWidget().download)
 
-    def closeEvent(self, event):
+    def closeEvent(self, event, **kwargs):
         quit_msg = "Сохранить изменения?"
         reply = QMessageBox.question(self, 'Message',
                                            quit_msg, QMessageBox.Yes, QMessageBox.No)
-        if reply == QtGui.QMessageBox.Yes:
+        if reply == QMessageBox.Yes:
             self.centralWidget().save()
         else:
             event.ignore()
+            sys.exit(QApplication(sys.argv).exec())
 
 
 if __name__ == '__main__':
