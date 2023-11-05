@@ -191,11 +191,12 @@ class Photoshop(QMainWindow):
                                         '',
                                         'Картинки (*.jpg)')[0]
         self.bright = 0
-        self.bright_change.setMinimum(0)
-        self.bright_change.setMaximum(255)
-        self.bright_change.setValue(255)
+        self.bright_change.setMinimum(-100)
+        self.bright_change.setMaximum(100)
+        self.bright_change.setValue(0)
+
         self.bright_change.setSingleStep(1)
-        self.bright_change.valueChanged.connect(self.set_bright)
+        self.bright_change.valueChanged.connect(self.set_bright2)
         self.degree = 0
         self.new_img = 'new.png'
         self.save.triggered.connect(self.saving)
@@ -229,8 +230,8 @@ class Photoshop(QMainWindow):
                 elif self.sender().text() == 'All-Gray':
                     gray = qGray(r, g, b)
                     self.curr_image.setPixelColor(QPoint(i, j), QColor(gray, gray, gray))
-                t = QTransform().rotate(self.degree)
-                self.curr_image = self.curr_image.transformed(t)
+                #t = QTransform().rotate(self.degree)
+                #self.curr_image = self.curr_image.transformed(t)
                 self.pixmap = QPixmap.fromImage(self.curr_image)
                 self.image.setPixmap(self.pixmap)
 
@@ -252,7 +253,8 @@ class Photoshop(QMainWindow):
 
     def set_bright(self):
         transp = int(self.bright_change.value())
-        img = Image.open(self.filename)
+        self.curr_image.save(self.new_img)
+        img = Image.open(self.new_img)
         img.putalpha(transp)
         img.save(self.new_img)
         new_image = QImage(self.new_img)
@@ -261,6 +263,28 @@ class Photoshop(QMainWindow):
         new_image = new_image.transformed(t)
         self.pixmap = QPixmap.fromImage(new_image)
         self.image.setPixmap(self.pixmap)
+
+    def set_bright2(self):
+        brightness = int(self.bright_change.value()) * 0.01
+        self.curr_image = self.orig_image.copy()
+        x, y = self.curr_image.size().width(), self.curr_image.size().height()
+
+        for i in range(x):
+            for j in range(y):
+                r, g, b, _ = self.curr_image.pixelColor(i, j).getRgb()
+                h, s, l, a = self.curr_image.pixelColor(i, j).getHslF()
+                # r = r + brightness if 255 > r + brightness > 0 else r
+                # g = g + brightness if 255 > g + brightness > 0 else g
+                # b = b + brightness if 255 > b + brightness > 0 else b
+
+                # self.curr_image.setPixelColor(QPoint(i, j),
+                #                               QColor(r, g, b))
+                self.curr_image.setPixelColor(QPoint(i, j),
+                                              QColor(QColor(r, g, b).setHslF(h, s, l + brightness, a)))
+                #t = QTransform().rotate(self.degree)
+                #self.curr_image = self.curr_image.transformed(t)
+                self.pixmap = QPixmap.fromImage(self.curr_image)
+                self.image.setPixmap(self.pixmap)
 
     def saving(self):
         # selecting file path
