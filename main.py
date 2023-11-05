@@ -73,6 +73,7 @@ class Main(QMainWindow):
         super().__init__()
         x = io.StringIO(ui)
         uic.loadUi(x, self)
+        self.setWindowTitle('HyperLens')
         self.Change_btn.clicked.connect(self.setPhotoshop)
         self.Create_btn.clicked.connect(self.setPaint)
         self.dialogs = list()
