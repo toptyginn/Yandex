@@ -5,7 +5,7 @@ from PIL import Image
 from PyQt5 import uic
 from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QPixmap, QImage, QColor, QTransform, qGray, qRgb
-from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication
+from PyQt5.QtWidgets import QMainWindow, QFileDialog, QApplication, QMessageBox
 
 ui = '''<?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
@@ -153,14 +153,26 @@ ui = '''<?xml version="1.0" encoding="UTF-8"?>
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Файл</string>
+    </property>
+    <addaction name="save"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="save">
+   <property name="text">
+    <string>Сохранить</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>
  <buttongroups>
-  <buttongroup name="channelButtons"/>
   <buttongroup name="rotateButtons"/>
+  <buttongroup name="channelButtons"/>
  </buttongroups>
 </ui>
 '''
@@ -186,6 +198,8 @@ class Photoshop(QMainWindow):
         self.bright_change.valueChanged.connect(self.set_bright)
         self.degree = 0
         self.new_img = 'new.png'
+        self.save.triggered.connect(self.saving)
+        self.setWindowTitle('Редактор изображений')
 
         self.orig_image = QImage(self.filename)
         self.curr_image = self.orig_image.copy()
@@ -242,32 +256,33 @@ class Photoshop(QMainWindow):
         img.putalpha(transp)
         img.save(self.new_img)
         new_image = QImage(self.new_img)
-        # # x, y = self.curr_image.size().width(), self.curr_image.size().height()
-        # #
-        # # for i in range(x):
-        # #     for j in range(y):
-        # #         r, g, b, _ = self.curr_image.pixelColor(i, j).getRgb()
-        # #         self.bright = (0.2126 * r + 0.7152 * g + 0.0722 * b) * self.bright_change.value() * 0.01
-        # #         h, s, l, x = QColor(self.curr_image.pixelColor(i, j)).getHslF()
-        # #         l = l * self.bright_change.value() * 0.01
-        # #         self.curr_image.setPixelColor(QPoint(i, j), QColor(QColor(r, g, b).setHslF(h, s, self.bright, x)))
-        #
-        #     '''  pixel = self.curr_image.pixel(x, y)
-        #     r = qRed(pixel)
-        #     g = qGreen(pixel)
-        #     b = qBlue(pixel)
-        #
-        #     new_r = min(max(r + self.bright_change.value(), 0), 255)
-        #     new_g = min(max(g + self.bright_change.value(), 0), 255)
-        #     new_b = min(max(b + self.bright_change.value(), 0), 255)
-        #
-        #     curr_image.setPixel(x, y, qRgb(new_r, new_g, new_b))
-        #         '''
 
         t = QTransform().rotate(self.degree)
         new_image = new_image.transformed(t)
         self.pixmap = QPixmap.fromImage(new_image)
         self.image.setPixmap(self.pixmap)
+
+    def saving(self):
+        # selecting file path
+        filePath, _ = QFileDialog.getSaveFileName(self, "Save Image", "",
+                                                  "PNG(*.png);;JPEG(*.jpg *.jpeg);;All Files(*.*) ")
+
+        # if file path is blank return back
+        if filePath == "":
+            return
+
+        # saving canvas at desired path
+        self.curr_image.save(filePath)
+
+    def closeEvent(self, event, **kwargs):
+        quit_msg = "Сохранить изменения?"
+        reply = QMessageBox.question(self, 'Message',
+                                           quit_msg, QMessageBox.Yes, QMessageBox.No)
+        if reply == QMessageBox.Yes:
+            self.saving()
+        else:
+            event.ignore()
+            sys.exit(QApplication(sys.argv).exec())
 
 
 if __name__ == '__main__':

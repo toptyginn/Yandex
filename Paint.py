@@ -402,6 +402,8 @@ class Paint(QMainWindow):
         self.save.triggered.connect(self.centralWidget().save)
         self.download.triggered.connect(self.centralWidget().download)
 
+        self.setWindowTitle('Рисование')
+
     def closeEvent(self, event, **kwargs):
         quit_msg = "Сохранить изменения?"
         reply = QMessageBox.question(self, 'Message',
